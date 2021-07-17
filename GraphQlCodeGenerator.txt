@@ -1,0 +1,42 @@
+Graph QL Code generator is used to create types for schema and resolvers automatically.
+
+
+
+https://www.graphql-code-generator.com/docs/getting-started/installation
+
+GraphQL code generator is the tool which allows us to generate the types for queries and mutations.
+and also both FE and BE.
+Steps:
+
+1. npm install --save graphql
+
+2. npm install --save-dev @graphql-codegen/cli - cli for code gen 
+
+3. npx graphql-codegen init
+
+this will generate configuration file for the generator
+
+This will ask foloowing questions.
+
+select following options.
+Backend - API or server
+
+where is your schema: http://localhost:3000/api/graphql
+
+pick the plugins
+
+Typescript
+Typescript resolvers
+
+where to write the output: generated/graphql-backend.ts
+
+do you want to generate introspection file(y/n) : n 
+
+how to name the config file ? codegen.yml
+what script in package.json should run the codegen? codegen
+
+
+
+
+
+

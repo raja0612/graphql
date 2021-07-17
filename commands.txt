@@ -29,5 +29,16 @@ vercel deploys our next js app to serverless env, and each api route is serverle
 
 
 
+//apollo client configuraion
+
+Apollo is a GraphQL client that allows us to easily query the exact data that we need from a GraphQL server.
+In addition to fetching and mutating data, Apollo analyzes our queries and their results to constrcut a
+client-side cache of our data.
+
+
+
+
+
+
 
 

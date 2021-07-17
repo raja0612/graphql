@@ -1,7 +1,8 @@
-import { ApolloServer, gql, IResolvers} from 'apollo-server-micro'
+import { ApolloServer, gql, UserInputError } from 'apollo-server-micro'
 import { title } from 'process';
 import mysql from 'serverless-mysql';
 import { OkPacket } from 'mysql';
+import { Resolvers, TaskStatus } from '../../generated/graphql-backend';
 
 const typeDefs = gql`
 
@@ -17,12 +18,14 @@ type Task {
 }
 
 input CreateTaskInput {
-  title: String
+  title: String!
   Status: TaskStatus
 }
 
 input UpdateTaskInput {
+  id: Int!
   title: String!
+  status: TaskStatus
 }
 
 type Query {
@@ -41,10 +44,6 @@ interface AppoloContext {
   db: mysql.ServerlessMysql
 }
 
-enum TaskStatus {
-  active = 'active',
-  completed = 'completed'
-}
 
 interface TaskDbRow {
   id: number;
@@ -52,21 +51,24 @@ interface TaskDbRow {
   status: TaskStatus;
 }
 
-
-interface Task {
-  id?: number;
-  title: string;
-  status: TaskStatus;
-}
-
+type TasksDbQueryResult = TaskDbRow[];
 type TaskDbQueryResult = TaskDbRow[];
 
-const resolvers: IResolvers<any, AppoloContext> = {
+
+const getTaskById = async (id:number, db: mysql.ServerlessMysql) => {
+  const query  ='SELECT id, title, status FROM tasks WHERE id = ?';
+
+  const tasks = await db.query<TaskDbQueryResult>(query, [id]);
+  console.log(tasks)
+  return tasks.length ? {id: tasks[0].id, title: tasks[0].title, status: tasks[0].status} : null
+}
+
+const resolvers: Resolvers<AppoloContext> = {
   Query: {
-    async tasks(parent, 
-      args: {status?: TaskStatus}, 
-      context): 
-      Promise<TaskDbRow[]> { 
+    async tasks(
+      parent, 
+      args, 
+      context) { 
 
       let query = 'SELECT  id, title, status FROM tasks';
       const { status } = args;
@@ -78,31 +80,58 @@ const resolvers: IResolvers<any, AppoloContext> = {
       }
     
 
-      const tasks = await context.db.query<TaskDbQueryResult>(query, queryParams);
+      const tasks = await context.db.query<TasksDbQueryResult>(query, queryParams);
       await db.end();
       return tasks;
 
     },
-    task(parent, args, context) {
-      return null
+    async task(parent, args, context) {
+       return await getTaskById(args.id, context.db);
     },
   },
 
   Mutation: {
-    async createTask(parent, args: {input: {title: string}}, context): Promise<Task> {
+    async createTask(parent,args, context) {
 
       const query = 'INSERT INTO tasks (title, status) VALUES (?, ?)'
-      const queryParams: string[] = [args.input.title, TaskStatus.active];
+      const queryParams: string[] = [args.input.title, TaskStatus.Active];
       const result = await context.db.query<OkPacket>(query, queryParams);
       return {
-        id: result.insertId, title: args.input.title, status: TaskStatus.active
+        id: result.insertId, title: args.input.title, status: TaskStatus.Active
       };
     },
-    updateTask(parent, args, context) {
-      return null
+    async updateTask(parent, args, context) {
+      console.log(args)
+
+      const columns: string[] = [];
+      const sqlParams: any[] = [];
+
+      if(args.input.title){
+        columns.push('title = ?');
+        sqlParams.push(args.input.title);
+      }
+
+      if(args.input.status){
+        columns.push('status = ?');
+        sqlParams.push(args.input.status);
+      }
+      sqlParams.push(args.input.id);
+      const query = `UPDATE tasks SET ${columns.join(',')} WHERE id = ?`;
+      console.log(query);
+      await context.db.query(query, sqlParams);
+      return getTaskById(args.input.id, context.db);
     },
-    deleteTask(parent, args, context) {
-      return null
+    async deleteTask(parent, args, context) {
+      const task = await getTaskById(args.id, context.db);
+      if(!task) {
+        throw new UserInputError("Sorry! Couldn't find the task");
+      }
+      const query = 'DELETE FROM tasks where id = ?';
+      const { id } = args;
+      const queryParams = []
+      queryParams.push(id);
+      await context.db.query(query, queryParams);
+      return task;
     },
 
   }
