@@ -1,0 +1,33 @@
+docker is container that package the applciation  and run inside its container.
+
+docker-compose.yml - file conatins container configuraion
+
+docker-compose up -d // build and deploy and running in baxck ground
+
+docker-compose stop // stop and doesnot remove
+
+docker-compose down // remove container.
+
+
+
+
+docker ps // list containers
+
+
+load sql scripts into docker 
+-i interactive
+docker exec -i task-mate_mysql_1 sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE' < db/schema.sql
+
+
+now we need to connect our fromnt end app to this db.
+
+serverless mysql:  
+
+in next js, we use vercel  is a service that allows us to deploy front end app.
+
+vercel deploys our next js app to serverless env, and each api route is serverless function.
+
+
+
+
+
