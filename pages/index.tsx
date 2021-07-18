@@ -1,46 +1,41 @@
 import Head from 'next/head'
-import styles from '../styles/Home.module.css'
-import  {gql, useQuery} from '@apollo/client'
 import { initializeApollo } from '../lib/client';
+import { TasksDocument, TasksQuery, useTasksQuery } from '../generated/graphql-frontend';
+import TasksList from '../components/TasksList';
+import CreateTaskForm from '../components/CreateTaskForm';
+import TasksFilter from '../components/TasksFilter';
 
-
-// this string converts into data structure called DocumentNode by gql
-const TasksQueryDocument = gql`
-query Tasks {
-  tasks {
-    id
-    title
-    status
-  }
-}
-`;
-
-interface TasksQuery{
-  tasks: {id: number, title: string, status: string}[]
-}
 
 export default function Home() {
+  const result = useTasksQuery();
+  // result.refetch rerun the tasks query and re render the component.
 
-  const result = useQuery<TasksQuery>(TasksQueryDocument);
+  // callback prop
+
+
 
   const tasks = result.data?.tasks;
   console.log('raj2', tasks)
 
   return (
-    <div className={styles.container}>
+    <div>
       <Head>
         <title>Tasks</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <CreateTaskForm onSuccess={result.refetch}/>
+
       {
-        tasks && tasks.length > 0 && tasks.map((task) => {
-          return(
-             <div key={task.id}> 
-                 {task.title} - {task.status}
-              </div>
-          )
-        })
-      }
+        result.loading ? (
+        <p>Loading tasks...</p>
+      ) : result.error ? (
+        <p>An error occurred.</p>
+      ) : tasks && tasks.length > 0 ? (
+        <TasksList tasks={tasks} />
+      ) : (
+        <p className="no-tasks-message">You've got no tasks.</p>
+      )}
+      <TasksFilter />
     </div>
   )
 }
@@ -53,7 +48,7 @@ export const getStaticProps = async () => {
   // run the tasks query
 
   await apolloClient.query<TasksQuery>({
-    query: TasksQueryDocument,
+    query: TasksDocument,
   });
 
   return {

@@ -138,3 +138,41 @@ Apollo client used below for making graphql api calls
 hook and we pass this apolloClient to all child components using ApolloProvider
 
 
+Types generation for front end
+in the codegen.yml
+documents: graphql/**/*.graphql  // in root graphql folder and sub folder file names ending with .graphql
+   generates:
+    generated/graphql-frontend.ts:
+      plugins:
+       - 'typescript'
+       - 'typescript-operations'
+       - "typescript-react-apollo"
+
+
+npm i -D @graphql-codegen/typescript-operations   
+npm i -D @graphql-codegen/typescript-react-apollo
+
+"typescript-react-apollo" plugin generates custoem react hooks for queriees and mutations.
+
+add queries under graphql/query.graphql
+
+tasks.graphql
+
+query Tasks {
+  tasks {
+    id
+    title
+    status
+  }
+
+  when we run npm run codegen , this will create Tasks gql qury with apolloClient warpper hooks.
+  will see in graphql-frontend.ts
+
+
+
+  component  => call useQuery(`gql query`) => apolloClient.useQuery => calls graphql server
+
+
+ 
+
+
