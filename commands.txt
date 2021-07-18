@@ -36,9 +36,105 @@ In addition to fetching and mutating data, Apollo analyzes our queries and their
 client-side cache of our data.
 
 
+Next js includes server side rendering and static site generation.
+
+in order to render the data, we need to fetch first froms erver
+
+Fetch data ---> Than call render function. because server side rendering is synchronus.
+
+Apollo client is used to fecth the data for both client and server.
+
+1. we write query using useQuery(GraphQLQuery); // this will get some data from server, useQuery hook is defined apollo client
 
 
+index.js
+import gql from 'graphql-tag'
+import Link from 'next/link'
+import { useQuery } from '@apollo/client'
+import { initializeApollo } from '../apollo/client'
+
+const ViewerQuery = gql`
+  query ViewerQuery {
+    viewer {
+      id
+      name
+      status
+    }
+  }
+`
+
+const Index = () => {
+  const {
+    data: { viewer },
+  } = useQuery(ViewerQuery)
+
+  return (
+    <div>
+      You're signed in as {viewer.name} and you're {viewer.status} goto{' '}
+      <Link href="/about">
+        <a>static</a>
+      </Link>{' '}
+      page.
+    </div>
+  )
+}
+
+export async function getStaticProps() {
+  const apolloClient = initializeApollo()
+
+  await apolloClient.query({
+    query: ViewerQuery,
+  })
+
+  return {
+    props: {
+      initialApolloState: apolloClient.cache.extract(),
+    },
+  }
+}
+
+export default Index
+
+2. getStaticProps() function is used to get some data on the server during static site generation.
+
+The index.js page is pre rendered at build time. getStaticProps() is aclled to fetch the data before any rendering occurs
 
 
+// firstr initialize Apollo client
+ const apolloClient = initializeApollo()
+
+// when ruunog query using apolloClient , it caches the result
+  await apolloClient.query({
+    query: ViewerQuery,
+  })
+
+
+// then extarct caches 
+ return {
+    props: {
+      initialApolloState: apolloClient.cache.extract(),
+    },
+
+
+this initialApolloState props is used in _app.js
+
+Apollo client used below for making graphql api calls
+
+1.  HttpLink on browser 
+2.  SchemaLink on server
+
+
+// Steps for apolloClient configuraion.
+
+1. We adeed apolloClient to app (client.ts under lib folder) during serverless side rensering and static site generation.
+   apolloClient gets the data  directly from resolvers(backend/resolvers.ts) and schema(backend/schema)
+   and in the browser using HttpLink using api route (/api/graphql)
+
+2. index.ts page  this page is rendered using static site generation before rendering
+
+3. apolloClient stores the query result in the cache and we pass this cache via props called initialApolloState.
+
+4. then we pass cache to _app.tsx via props. here we initialize apolloClient using useApollo(props.initialApolloState) 
+hook and we pass this apolloClient to all child components using ApolloProvider
 
 

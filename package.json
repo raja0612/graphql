@@ -10,8 +10,10 @@
     "codegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@apollo/client": "^3.3.21",
     "apollo-server-micro": "^2.17.0",
     "graphql": "^15.5.1",
+    "graphql-tools": "^4.0.8",
     "next": "11.0.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -19,11 +21,11 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "1.21.7",
+    "@graphql-codegen/typescript": "1.23.0",
+    "@graphql-codegen/typescript-resolvers": "1.20.0",
     "@types/node": "^15.14.2",
     "@types/react": "^17.0.14",
     "eslint": "7.30.0",
-    "eslint-config-next": "11.0.1",
-    "@graphql-codegen/typescript-resolvers": "1.20.0",
-    "@graphql-codegen/typescript": "1.23.0"
+    "eslint-config-next": "11.0.1"
   }
 }
