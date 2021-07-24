@@ -11,13 +11,12 @@ function MyApp({ Component, pageProps }: AppProps) {
   
   return (
     <ApolloProvider client={apolloClient}>
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </ApolloProvider>
     );
 }
 
 export default MyApp
-
 // ApolloProvider will provide the apolloClient cache queries to page comeponents
